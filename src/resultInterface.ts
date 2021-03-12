@@ -10,6 +10,7 @@ export interface Event {
 }
 
 export interface Result {
+  startTime: number,
   totalTime: number,
   events: Event[],
   request: Request

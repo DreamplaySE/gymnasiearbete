@@ -93,14 +93,6 @@ async function train(model: tf.Sequential, data: TensorflowDataHandler, bar: Pro
   const events: Event[] = [];
 
   const callbacks: CustomCallbackArgs = {
-    //onTrainBegin: (logs: Logs) => console.log("onTrainBegin", logs),
-    onTrainEnd: (logs?: Logs) => {
-      //console.log("onTrainEnd", logs)
-      //bar.tick(logs.size)
-    },
-    //onEpochBegin: (epoch: number, logs?: Logs) => console.log("onEpochBegin", logs),
-    //onEpochEnd: (epoch: number, logs?: Logs) => console.log("onEpochEnd", logs),
-    //onBatchBegin: (batch: number, logs?: Logs) => console.log("onBatchBegin", logs),
     onBatchEnd: (batch: number, logs?: Logs) => {
       const event: Event = {
         event: "onBatchEnd",
@@ -134,23 +126,19 @@ async function train(model: tf.Sequential, data: TensorflowDataHandler, bar: Pro
   return events;
 };
 
-let test = 0;
-
-export const TensorflowTest = new Test("tensorflow", async (request) => {
-  const {mnistData, ratio, batchSize, epochs} = request;
+export const TensorflowTest = new Test("tensorflow", async (request, mnistData, testCount, testNumber) => {
+  const {ratio, batchSize, epochs} = request;
 
   const data = new TensorflowDataHandler();
   data.load(mnistData, ratio);
 
   const model = getModel();
 
-  var bar = new ProgressBar(`Running test ${test.toString()} [:bar] :rate images/s :percent :etas`, { total: Math.floor(data.numTrainElements / epochs) * epochs });
-  test += 1;
+  var bar = new ProgressBar(`Running test ${(testNumber + 1).toString()}/${testCount.toString()} [:bar] :rate images/s :percent :etas`, { total: Math.floor(data.numTrainElements / epochs) * epochs });
 
   const startTime = Date.now();
   
   const events = await train(model, data, bar, batchSize, epochs);
-
 
   const endTime = Date.now();
 
@@ -161,6 +149,7 @@ export const TensorflowTest = new Test("tensorflow", async (request) => {
   });
 
   return {
+    startTime,
     totalTime,
     events,
     request

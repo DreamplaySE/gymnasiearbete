@@ -1,4 +1,5 @@
-import * as fs from "fs";
+import { createReadStream } from "fs";
+import { readFile } from "fs/promises";
 import { resolve } from "path";
 import { PNG } from "pngjs";
 import * as ProgressBar from "progress";
@@ -32,7 +33,7 @@ export class MnistData {
   async load() {
     //Initate png and load mnist image.
     let png = new PNG();
-    await new Promise<void>((resolve) => fs.createReadStream(MNIST_IMAGES_SPRITE_PATH)
+    await new Promise<void>((resolve) => createReadStream(MNIST_IMAGES_SPRITE_PATH)
       .pipe(png)
       .on('parsed', (data) => {
         //Initializing array buffer.
@@ -78,9 +79,10 @@ export class MnistData {
     ));
 
     //Read label data
-    await new Promise<void>((resolve) => fs.readFile(MNIST_LABELS_PATH, (err, buffer) => {
+    await readFile(MNIST_LABELS_PATH)
+    .then(buffer => {
       this.datasetLabels = new Uint8Array(buffer);
       resolve();
-    }));
+    });
   }
 }
